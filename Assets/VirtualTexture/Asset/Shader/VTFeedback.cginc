@@ -17,7 +17,7 @@ fixed4 VTFragFeedback(VTV2f i) : SV_Target
 	float2 dy = ddy(uv);
 	int mip = clamp(int(0.5 * log2(max(dot(dx, dx), dot(dy, dy))) + 0.5 + _VTFeedbackParam.w), 0, _VTFeedbackParam.z);
 
-	//return fixed4(1.0, 1.0f, 0.0f, 1.0f);
+	return fixed4(1.0, 1.0f, 0.0f, 1.0f);
 	return fixed4(page / 255.0, mip / 255.0, 1);
 }
 

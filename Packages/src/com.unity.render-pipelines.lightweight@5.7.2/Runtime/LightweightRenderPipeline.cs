@@ -112,6 +112,8 @@ namespace UnityEngine.Rendering.LWRP
             SortCameras(cameras);
             foreach (Camera camera in cameras)
             {
+                if (camera.name == "VirtualTexture")//trick
+                    continue;
                 BeginCameraRendering(renderContext, camera);
                 RenderSingleCamera(renderContext, camera);
                 EndCameraRendering(renderContext, camera);

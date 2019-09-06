@@ -35,44 +35,21 @@ namespace UnityEngine.Rendering.LWRP
                 m_ReadbackTexture.filterMode = FilterMode.Point;
                 m_ReadbackTexture.wrapMode = TextureWrapMode.Clamp;
             }
-            // 发起异步回读请求
-            var request = AsyncGPUReadback.Request(m_FeedBackTexture);
-            m_ReadbackRequests.Enqueue(request);
-        }
-
-        private void UpdateRequest()
-        {
-          
-            bool complete = false;
-            while (m_ReadbackRequests.Count > 0)
+            RenderTexture.active = m_FeedBackTexture;
+            m_ReadbackTexture.ReadPixels(new Rect(0, 0, m_FeedBackTexture.width, m_FeedBackTexture.height), 0, 0);
+            m_ReadbackTexture.Apply();
+            int count = 0;
+            foreach (var c in m_ReadbackTexture.GetRawTextureData<Color32>())
             {
-                var req = m_ReadbackRequests.Peek();
-
-                if (req.hasError)
-                {
-                    m_ReadbackRequests.Dequeue();
-                }
-                else if (req.done)
-                {
-                    // 更新数据并分发事件
-                    m_ReadbackTexture.GetRawTextureData<Color32>().CopyFrom(req.GetData<Color32>());
-                    complete = true;
-                    
-                    m_ReadbackRequests.Dequeue();
-                }
-                else
-                {
-                    break;
+                if(count <=10)
+                { 
+                    Debug.Log("c.a:" + c.a);
+                    count++;
                 }
             }
-
-            if (complete)
-            {
-               
-               // OnFeedbackReadComplete?.Invoke(m_ReadbackTexture);
-                
-            }
         }
+
+       
 
 #pragma endregion InterfaceArea
 
@@ -318,13 +295,13 @@ namespace UnityEngine.Rendering.LWRP
             if (m_ActiveCameraDepthAttachment != RenderTargetHandle.CameraTarget)
                 cmd.ReleaseTemporaryRT(m_ActiveCameraDepthAttachment.id);
 
-            UpdateRequest();
+            //UpdateRequest();
 
            
             CommandBuffer newcmd = CommandBufferPool.Get("debug");
             using (new ProfilingSample(newcmd, "debug"))
             {
-                cmd.Blit(m_FeedBackTexture, RenderTargetHandle.CameraTarget.Identifier());
+                cmd.Blit(m_ReadbackTexture, RenderTargetHandle.CameraTarget.Identifier());
             }
             m_FeedBackTexture.Release();
 
@@ -336,7 +313,6 @@ namespace UnityEngine.Rendering.LWRP
            
             CommandBuffer cmd = CommandBufferPool.Get(k_CreateFeedBackTexture);
             var descriptor = cameraData.cameraTargetDescriptor;
-            int msaaSamples = descriptor.msaaSamples;
             var colorDescriptor = descriptor;
             colorDescriptor.depthBufferBits =  k_DepthStencilBufferBits;
             m_FeedBackTexture = new RenderTexture(colorDescriptor);

@@ -5,7 +5,7 @@
 		Tags{ "VirtualTextureType" = "Normal" }
         LOD 100
 
-		  Pass
+		/*  Pass
 		{
 		//Tags{"LightMode" = "LightweightForward"}
 			CGPROGRAM
@@ -13,7 +13,7 @@
 			#pragma vertex VTVert
 			#pragma fragment VTFragUnlit
 			ENDCG
-		}
+		}*/
         Pass
         {
 			Tags{"LightMode" = "LightweightForward"}
