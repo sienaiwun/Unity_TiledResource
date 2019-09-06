@@ -1,9 +1,85 @@
+using System;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+
 namespace UnityEngine.Rendering.LWRP
 {
-    internal class ForwardRenderer : ScriptableRenderer
+    internal class ForwardRenderer : ScriptableRenderer, IFeedbackRenderer
     {
+#pragma region InterfaceArea
+        public event Action<RenderTargetIdentifier> OnFeedbackRenderComplete;
+
+        private Queue<AsyncGPUReadbackRequest> m_ReadbackRequests = new Queue<AsyncGPUReadbackRequest>();
+
+        private Texture2D m_ReadbackTexture;
+
+        RenderTargetIdentifier m_FeedBackBufferAttachment;
+
+        RenderTexture m_FeedBackTexture;
+
+        public void FeedBackRenderComplete()
+        {
+            AddRequest();
+        }
+        public void AddRequest()
+        {
+            if (m_ReadbackRequests.Count > 8)
+                return;
+            int width = m_FeedBackTexture.width;
+            int height = m_FeedBackTexture.height;
+            if (m_ReadbackTexture == null || m_ReadbackTexture.width != width || m_ReadbackTexture.height != height)
+            {
+                m_ReadbackTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+                m_ReadbackTexture.filterMode = FilterMode.Point;
+                m_ReadbackTexture.wrapMode = TextureWrapMode.Clamp;
+            }
+            // 发起异步回读请求
+            var request = AsyncGPUReadback.Request(m_FeedBackTexture);
+            m_ReadbackRequests.Enqueue(request);
+        }
+
+        private void UpdateRequest()
+        {
+          
+            bool complete = false;
+            while (m_ReadbackRequests.Count > 0)
+            {
+                var req = m_ReadbackRequests.Peek();
+
+                if (req.hasError)
+                {
+                    m_ReadbackRequests.Dequeue();
+                }
+                else if (req.done)
+                {
+                    // 更新数据并分发事件
+                    m_ReadbackTexture.GetRawTextureData<Color32>().CopyFrom(req.GetData<Color32>());
+                    complete = true;
+                    
+                    m_ReadbackRequests.Dequeue();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (complete)
+            {
+               
+               // OnFeedbackReadComplete?.Invoke(m_ReadbackTexture);
+                
+            }
+        }
+
+#pragma endregion InterfaceArea
+
+
         const int k_DepthStencilBufferBits = 32;
         const string k_CreateCameraTextures = "Create Camera Texture";
+        const string k_CreateFeedBackTexture = "Create FeedBack Texture";
 
         DepthOnlyPass m_DepthPrepass;
         MainLightShadowCasterPass m_MainLightShadowCasterPass;
@@ -14,6 +90,7 @@ namespace UnityEngine.Rendering.LWRP
         DrawSkyboxPass m_DrawSkyboxPass;
         CopyDepthPass m_CopyDepthPass;
         CopyColorPass m_CopyColorPass;
+        RenderFeedBackPass m_FeedBackPass;
         RenderTransparentForwardPass m_RenderTransparentForwardPass;
         PostProcessPass m_PostProcessPass;
         FinalBlitPass m_FinalBlitPass;
@@ -32,6 +109,7 @@ namespace UnityEngine.Rendering.LWRP
 
         ForwardLights m_ForwardLights;
 
+
         public ForwardRenderer(ForwardRendererData data) : base(data)
         {
             Downsampling downsamplingMethod = LightweightRenderPipeline.asset.opaqueDownsampling;
@@ -47,6 +125,8 @@ namespace UnityEngine.Rendering.LWRP
             m_AdditionalLightsShadowCasterPass = new AdditionalLightsShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_DepthPrepass = new DepthOnlyPass(RenderPassEvent.BeforeRenderingPrepasses, RenderQueueRange.opaque);
             m_ScreenSpaceShadowResolvePass = new ScreenSpaceShadowResolvePass(RenderPassEvent.BeforeRenderingPrepasses, screenspaceShadowsMaterial);
+            m_FeedBackPass = new RenderFeedBackPass(RenderPassEvent.BeforeRenderingOpaques, RenderQueueRange.opaque, data.opaqueLayerMask);
+           
             m_RenderOpaqueForwardPass = new RenderOpaqueForwardPass(RenderPassEvent.BeforeRenderingOpaques, RenderQueueRange.opaque, data.opaqueLayerMask);
             m_CopyDepthPass = new CopyDepthPass(RenderPassEvent.BeforeRenderingOpaques, copyDepthMaterial);
             m_OpaquePostProcessPass = new PostProcessPass(RenderPassEvent.BeforeRenderingOpaques, true);
@@ -100,6 +180,8 @@ namespace UnityEngine.Rendering.LWRP
             m_ActiveCameraDepthAttachment = (createDepthTexture) ? m_CameraDepthAttachment : RenderTargetHandle.CameraTarget;
             if (createColorTexture || createDepthTexture)
                 CreateCameraRenderTarget(context, ref renderingData.cameraData);
+            CreateFeedBackRenderTarget(context, ref renderingData.cameraData);
+            m_FeedBackPass.ConfigureTarget(m_FeedBackBufferAttachment);
             ConfigureCameraTarget(m_ActiveCameraColorAttachment.Identifier(), m_ActiveCameraDepthAttachment.Identifier());
 
             for (int i = 0; i < rendererFeatures.Count; ++i)
@@ -132,6 +214,7 @@ namespace UnityEngine.Rendering.LWRP
                 m_ScreenSpaceShadowResolvePass.Setup(cameraTargetDescriptor);
                 EnqueuePass(m_ScreenSpaceShadowResolvePass);
             }
+            EnqueuePass(m_FeedBackPass);
 
             EnqueuePass(m_RenderOpaqueForwardPass);
 
@@ -206,6 +289,8 @@ namespace UnityEngine.Rendering.LWRP
 #endif
         }
 
+        
+
         public override void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             m_ForwardLights.Setup(context, ref renderingData);
@@ -232,6 +317,33 @@ namespace UnityEngine.Rendering.LWRP
 
             if (m_ActiveCameraDepthAttachment != RenderTargetHandle.CameraTarget)
                 cmd.ReleaseTemporaryRT(m_ActiveCameraDepthAttachment.id);
+
+            UpdateRequest();
+
+           
+            CommandBuffer newcmd = CommandBufferPool.Get("debug");
+            using (new ProfilingSample(newcmd, "debug"))
+            {
+                cmd.Blit(m_FeedBackTexture, RenderTargetHandle.CameraTarget.Identifier());
+            }
+            m_FeedBackTexture.Release();
+
+
+        }
+
+        public void CreateFeedBackRenderTarget(ScriptableRenderContext context, ref CameraData cameraData)
+        {
+           
+            CommandBuffer cmd = CommandBufferPool.Get(k_CreateFeedBackTexture);
+            var descriptor = cameraData.cameraTargetDescriptor;
+            int msaaSamples = descriptor.msaaSamples;
+            var colorDescriptor = descriptor;
+            colorDescriptor.depthBufferBits =  k_DepthStencilBufferBits;
+            m_FeedBackTexture = new RenderTexture(colorDescriptor);
+            m_FeedBackTexture.name = "FeedbackTexture";
+            m_FeedBackBufferAttachment = new RenderTargetIdentifier(m_FeedBackTexture);
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
         }
 
         void CreateCameraRenderTarget(ScriptableRenderContext context, ref CameraData cameraData)

@@ -311,7 +311,9 @@ namespace UnityEngine.Rendering.LWRP
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
 
+            renderPass.OnPreRender(this);
             renderPass.Execute(context, ref renderingData);
+            renderPass.OnPostRender(this);
         }
 
         void BeginXRRendering(ScriptableRenderContext context, Camera camera)

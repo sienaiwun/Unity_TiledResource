@@ -102,6 +102,11 @@ namespace UnityEngine.Rendering.LWRP
         public virtual void FrameCleanup(CommandBuffer cmd)
         {}
 
+        public virtual void OnPreRender(ScriptableRenderer cmd)
+        {}
+
+        public virtual void OnPostRender(ScriptableRenderer cmd)
+        { }
         /// <summary>
         /// Execute the pass. This is where custom rendering occurs. Specific details are left to the implementation
         /// </summary>
