@@ -123,6 +123,8 @@ namespace UnityEngine.Rendering.LWRP
             SortCameras(cameras);
             foreach (Camera camera in cameras)
             {
+                if (camera.name == FeedbackGlobals.FeedbackCamName)
+                    break;
                
                 BeginCameraRendering(renderContext, camera);
 
