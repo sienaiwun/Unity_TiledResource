@@ -10,6 +10,10 @@ using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
 
 namespace UnityEngine.Rendering.LWRP
 {
+    public static class FeedbackGlobals
+    {
+        public static readonly string FeedbackCamName = "Feedback Camera";
+    }
 
     public interface IBeforeCameraRender
     {
@@ -117,43 +121,15 @@ namespace UnityEngine.Rendering.LWRP
             SetupPerFrameShaderConstants();
 
             SortCameras(cameras);
-            Camera uiCamera = null;
-            Camera mainCamera = Camera.main;
             foreach (Camera camera in cameras)
             {
-                if (camera.gameObject.layer == k_UICameraLayer)
-                {
-                    uiCamera = camera;
-                    break;
-                }
-            }
-            foreach (Camera camera in cameras)
-            {
-                if (camera.gameObject.layer != k_UICameraLayer && !mainCamera)
-                {
-                    mainCamera = camera;
-                    break;
-                }
-            }
-            foreach (Camera camera in cameras)
-            {
-                if (camera.gameObject.layer == k_UICameraLayer && cameras.Length != 1)
-                {
-                    continue; // UI camera is now a pass of main camera renderer
-                    // if UI is the only camera, render it as main camera
-                }
+               
                 BeginCameraRendering(renderContext, camera);
 
                 foreach (var beforeCamera in camera.GetComponents<IBeforeCameraRender>())
                     beforeCamera.ExecuteBeforeCameraRender(this, renderContext, camera);
-                if (camera == mainCamera)
-                {
-                    RenderSingleCamera(renderContext, camera, uiCamera);
-                }
-                else
-                {
-                    RenderSingleCamera(renderContext, camera);
-                }
+                
+                RenderSingleCamera(renderContext, camera);
                 EndCameraRendering(renderContext, camera);
 
             }
@@ -174,15 +150,17 @@ namespace UnityEngine.Rendering.LWRP
             InitializeCameraData(settings, camera, additionalCameraData, out var cameraData);
             SetupPerCameraShaderConstants(cameraData);
 
-            ScriptableRenderer renderer = camera.cameraType == CameraType.Reflection ? settings.reflectionCameraRender: (additionalCameraData != null) ? additionalCameraData.scriptableRenderer : settings.scriptableRenderer;
+            ScriptableRenderer renderer = camera.name == FeedbackGlobals.FeedbackCamName ? settings.feedbackRenderer : (additionalCameraData != null) ? additionalCameraData.scriptableRenderer : settings.scriptableRenderer;
+           // renderer = settings.scriptableRenderer;
             if (renderer == null)
             {
                 Debug.LogWarning(string.Format("Trying to render {0} with an invalid renderer. Camera rendering will be skipped.", camera.name));
                 return;
             }
-            
-            CommandBuffer cmd = CommandBufferPool.Get(k_RenderCameraTag);
-            using (new ProfilingSample(cmd, k_RenderCameraTag))
+
+            string camera_tag_string = string.Format("{0},{1}", k_RenderCameraTag , camera.name);
+            CommandBuffer cmd = CommandBufferPool.Get(camera_tag_string);
+            using (new ProfilingSample(cmd, camera_tag_string))
             {
                 renderer.Clear();
                 renderer.SetupCullingParameters(ref cullingParameters, ref cameraData);

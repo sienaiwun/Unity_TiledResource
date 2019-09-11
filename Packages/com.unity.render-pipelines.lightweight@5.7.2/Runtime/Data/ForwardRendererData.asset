@@ -25,7 +25,7 @@ MonoBehaviour:
   m_Name: ForwardRendererData
   m_EditorClassIdentifier: 
   m_RendererFeatures: []
-  m_BlitShader: {fileID: 4800000, guid: c17132b1f77d20942aa75f8429c0f8bc, type: 3}
+  m_BlitShader: {fileID: 4800000, guid: f8bdab145bf7254409e4bddd316e5ff0, type: 3}
   m_CopyDepthShader: {fileID: 4800000, guid: d6dae50ee9e1bfa4db75f19f99355220, type: 3}
   m_ScreenSpaceShadowShader: {fileID: 4800000, guid: 0f854b35a0cf61a429bd5dcfea30eddd,
     type: 3}

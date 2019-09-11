@@ -83,7 +83,7 @@ namespace UnityEngine.Rendering.LWRP
     {
         Shader m_DefaultShader;
         internal ScriptableRenderer m_Renderer;
-        internal ScriptableRenderer m_ReflectionCameraRenderer;
+        internal ScriptableRenderer m_FeedbackRenderer;
 
         // Default values set when a new LightweightRenderPipeline asset is created
         [SerializeField] int k_AssetVersion = 4;
@@ -273,13 +273,13 @@ namespace UnityEngine.Rendering.LWRP
 #endif
         }
 
-        public ScriptableRenderer reflectionCameraRender
+        public ScriptableRenderer feedbackRenderer
         {
             get
             {
-                if (m_ReflectionCameraRenderer == null)
-                    m_ReflectionCameraRenderer = new ReflectionCameraRenderer((ForwardRendererData)m_RendererData);
-                return m_ReflectionCameraRenderer;
+                if (m_FeedbackRenderer == null)
+                    m_FeedbackRenderer = new FeedBackCameraRender((ForwardRendererData)m_RendererData);
+                return m_FeedbackRenderer;
             }
         }
 

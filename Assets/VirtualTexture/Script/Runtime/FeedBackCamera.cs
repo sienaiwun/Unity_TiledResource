@@ -44,7 +44,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         feedBackCamera.targetTexture = m_FeedBackTexture;
         feedBackCamera.allowMSAA = false;
         feedBackCamera.depth = -10;
-        feedBackCamera.name = "Feedback Camera";
+        feedBackCamera.name = FeedbackGlobals.FeedbackCamName;
         feedBackCamera.allowHDR = false;
         feedBackCamera.renderingPath = RenderingPath.Forward;
         feedBackCamera.clearFlags = CameraClearFlags.Color;

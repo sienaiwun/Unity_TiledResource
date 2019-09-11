@@ -4,12 +4,12 @@ using UnityEngine.Rendering.LWRP;
 
 internal class FeedBackCameraRender : ForwardRenderer
 {
- 
+
+    public FeedbackPass m_feedbackPass;
 
     public FeedBackCameraRender(ForwardRendererData data) : base(data)
     {
-        
-
+        m_feedbackPass = new FeedbackPass(RenderPassEvent.BeforeRenderingOpaques, RenderQueueRange.opaque, data.opaqueLayerMask);
     }
 
     public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -45,19 +45,10 @@ internal class FeedBackCameraRender : ForwardRenderer
             if (activeRenderPassQueue[i] == null)
                 activeRenderPassQueue.RemoveAt(i);
         }
-      
-      
+        EnqueuePass(m_feedbackPass);
 
-      
-        EnqueuePass(m_RenderOpaqueForwardPass);
-
-      
-        if (camera.clearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null)
-            EnqueuePass(m_DrawSkyboxPass);
-
+     
        
-        EnqueuePass(m_RenderTransparentForwardPass);
-
        
 
 #if UNITY_EDITOR

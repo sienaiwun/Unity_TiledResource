@@ -6,13 +6,11 @@ namespace UnityEngine.Rendering.LWRP
         const string k_CreateCameraTextures = "Create Camera Texture";
 
         protected DepthOnlyPass m_DepthPrepass;
-        protected NormalOnlyPass m_NormalsPrePass;
         protected MainLightShadowCasterPass m_MainLightShadowCasterPass;
         protected AdditionalLightsShadowCasterPass m_AdditionalLightsShadowCasterPass;
         protected ScreenSpaceShadowResolvePass m_ScreenSpaceShadowResolvePass;
         protected SSShadowDownSamplePass m_SSSDownsamplePass;
         protected RenderOpaqueForwardPass m_RenderOpaqueForwardPass;
-        protected RenderOpaqueForwardPass m_RenderOpaqueForwardAfterPPPass;
         //protected RenderOpaqueDiscardAndBlendPass m_RenderOpaqueDiscardAndBlendPass;
         protected PostProcessPass m_OpaquePostProcessPass;
         protected DrawSkyboxPass m_DrawSkyboxPass;
@@ -22,7 +20,6 @@ namespace UnityEngine.Rendering.LWRP
         //protected RenderObjectsPass m_RenderObjectsPass;
 
         protected RenderTransparentForwardPass m_RenderTransparentForwardPass;
-        protected RenderTransparentForwardPass m_RenderTransparentForwardAfterPPPass;
         protected PostProcessPass m_PostProcessPass;
         protected UICameraPass m_UICameraPass;
         protected FinalBlitPass m_FinalBlitPass;
@@ -58,13 +55,11 @@ namespace UnityEngine.Rendering.LWRP
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_AdditionalLightsShadowCasterPass = new AdditionalLightsShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_DepthPrepass = new DepthOnlyPass(RenderPassEvent.BeforeRenderingPrepasses, RenderQueueRange.all);
-            m_NormalsPrePass = new NormalOnlyPass(RenderPassEvent.BeforeRenderingPrepasses, RenderQueueRange.opaque);
-            //m_NormalsPrePass = new NormalOnlyPass(RenderPassEvent.AfterRenderingTransparents, RenderQueueRange.opaque);
             m_ScreenSpaceShadowResolvePass = new ScreenSpaceShadowResolvePass(RenderPassEvent.BeforeRenderingPrepasses, screenspaceShadowsMaterial);
             m_SSSDownsamplePass = new SSShadowDownSamplePass(RenderPassEvent.BeforeRenderingPrepasses, ssDownSampleMaterial);
 
             m_RenderOpaqueForwardPass = new RenderOpaqueForwardPass(RenderPassEvent.BeforeRenderingOpaques, RenderQueueRange.opaque, data.opaqueLayerMask);
-            m_RenderOpaqueForwardAfterPPPass = new RenderOpaqueForwardPass(RenderPassEvent.AfterRenderingPostProcessing, RenderQueueRange.opaque, data.opaqueAfterPPLayerMask);
+            
             m_CopyDepthPass = new CopyDepthPass(RenderPassEvent.BeforeRenderingOpaques, copyDepthMaterial);
             m_OpaquePostProcessPass = new PostProcessPass(RenderPassEvent.BeforeRenderingOpaques, true);
             m_DrawSkyboxPass = new DrawSkyboxPass(RenderPassEvent.BeforeRenderingSkybox);
@@ -72,8 +67,7 @@ namespace UnityEngine.Rendering.LWRP
             //m_RenderOpaqueDiscardAndBlendPass = new RenderOpaqueDiscardAndBlendPass(RenderPassEvent.BeforeRenderingTransparents , new RenderQueueRange(2350,2550), data.opaqueLayerMask);
 
             m_RenderTransparentForwardPass = new RenderTransparentForwardPass(RenderPassEvent.BeforeRenderingTransparents, RenderQueueRange.transparent, data.transparentLayerMask);
-            m_RenderTransparentForwardAfterPPPass = new RenderTransparentForwardPass(RenderPassEvent.AfterRenderingPostProcessing, RenderQueueRange.transparent, data.uiAfterPPLayerMask);
-
+            
             //m_RenderObjectsPass = new RenderObjectsPass(RenderPassEvent.AfterRenderingTransparents, RenderQueueRange.all);
 
             m_PostProcessPass = new PostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing);
@@ -115,8 +109,6 @@ namespace UnityEngine.Rendering.LWRP
             requiresDepthPrepass |= resolveShadowsInScreenSpace;
             bool createColorTexture = RequiresIntermediateColorTexture(ref renderingData, cameraTargetDescriptor)
                                       || rendererFeatures.Count != 0;
-
-            bool requiresNormals = true;
 
             // If camera requires depth and there's no depth pre-pass we create a depth texture that can be read
             // later by effect requiring it.
@@ -168,8 +160,7 @@ namespace UnityEngine.Rendering.LWRP
             }     
 
             EnqueuePass(m_RenderOpaqueForwardPass);
-            EnqueuePass(m_RenderOpaqueForwardAfterPPPass);
-            m_RenderOpaqueForwardAfterPPPass.ConfigureAfterPP(true, cameraTargetDescriptor);
+         
 
             if (hasOpaquePostProcess)
                 m_OpaquePostProcessPass.Setup(cameraTargetDescriptor, m_ActiveCameraColorAttachment, m_ActiveCameraColorAttachment);
@@ -186,12 +177,7 @@ namespace UnityEngine.Rendering.LWRP
                 EnqueuePass(m_CopyDepthPass);
             }
 
-            if (requiresNormals)
-            {
-                m_NormalsPrePass.Setup(cameraTargetDescriptor, new RenderTargetHandle());
-                //m_NormalsPrePass.Setup(new RenderTextureDescriptor(cameraTargetDescriptor.width, cameraTargetDescriptor.height, RenderTextureFormat.ARGB32, 32), m_CameraNormalAttachment, m_CameraColorAttachment, m_DepthTexture);
-                EnqueuePass(m_NormalsPrePass);
-            }
+           
 
             if (renderingData.cameraData.requiresOpaqueTexture)
             {
@@ -203,8 +189,7 @@ namespace UnityEngine.Rendering.LWRP
             //EnqueuePass(m_RenderObjectsPass);
 
             EnqueuePass(m_RenderTransparentForwardPass);
-            EnqueuePass(m_RenderTransparentForwardAfterPPPass);
-            m_RenderTransparentForwardAfterPPPass.ConfigureAfterPP(true, cameraTargetDescriptor);
+           
 
             bool afterRenderExists = renderingData.cameraData.captureActions != null ||
                                      hasAfterRendering;
