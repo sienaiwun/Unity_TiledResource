@@ -8,6 +8,7 @@ using VirtualTexture;
 [ImageEffectAllowedInSceneView]
 public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 {
+    private Queue<AsyncGPUReadbackRequest> m_ReadbackRequests = new Queue<AsyncGPUReadbackRequest>();
 
     const string k_Reflection_process = "Reflection Blur PostProcess";
     const string k_glossy_enable = "_GLOSSY_REFLECTION";
@@ -17,6 +18,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     public Material m_matReflectionBlur = null;
     private Camera m_ReflectionCamera;
     private RenderTexture m_ReflectionTexture = null;
+    public Texture2D m_ReadbackTexture;
 
     private Vector4 reflectionPlane;
 
@@ -118,7 +120,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         reflectionCamera.name = FeedbackGlobals.FeedbackCamName;
         reflectionCamera.allowHDR = false;
 
-        go.hideFlags = HideFlags.HideAndDontSave;
+        go.hideFlags = HideFlags.DontSave;
         return reflectionCamera;
     }
 
@@ -135,7 +137,68 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         Stat.BeginFrame();
         LightweightRenderPipeline.RenderSingleCamera(context, m_ReflectionCamera);
         Stat.EndFrame();
+
+        NewRequest();
        
+    }
+
+    private void NewRequest()
+    {
+        if (m_ReadbackRequests.Count > 8)
+            return;
+        var request = AsyncGPUReadback.Request(m_ReflectionTexture);
+        int width = m_ReflectionTexture.width;
+        int height = m_ReflectionTexture.height;
+        if (m_ReadbackTexture == null || m_ReadbackTexture.width != width || m_ReadbackTexture.height != height)
+        {
+            m_ReadbackTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            m_ReadbackTexture.filterMode = FilterMode.Point;
+            m_ReadbackTexture.wrapMode = TextureWrapMode.Clamp;
+        }
+        m_ReadbackRequests.Enqueue(request);
+    }
+
+    private void UpdateRequest()
+    {
+        bool complete = false;
+        while (m_ReadbackRequests.Count > 0)
+        {
+            var req = m_ReadbackRequests.Peek();
+
+            if (req.hasError)
+            {
+               // ReadbackStat.EndRequest(req, false);
+                m_ReadbackRequests.Dequeue();
+            }
+            else if (req.done)
+            {
+                // 更新数据并分发事件
+                m_ReadbackTexture.GetRawTextureData<Color32>().CopyFrom(req.GetData<Color32>());
+                complete = true;
+
+             //   ReadbackStat.EndRequest(req, true);
+                m_ReadbackRequests.Dequeue();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (complete)
+        {
+          /*  UpdateStat.EndFrame();
+
+            OnFeedbackReadComplete?.Invoke(m_ReadbackTexture);
+
+            UpdateDebugTexture();*/
+        }
+    }
+
+
+    void Update()
+    {
+         UpdateRequest();
     }
 
 
