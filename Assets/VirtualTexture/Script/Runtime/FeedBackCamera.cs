@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -13,16 +13,15 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     const string k_Reflection_process = "Reflection Blur PostProcess";
     const string k_glossy_enable = "_GLOSSY_REFLECTION";
     
-    
-    public Material m_matCopyDepth = null;
-    public Material m_matReflectionBlur = null;
     private Camera m_ReflectionCamera;
-    private RenderTexture m_ReflectionTexture = null;
+    public RenderTexture m_ReflectionTexture = null;
     public Texture2D m_ReadbackTexture;
 
     private Vector4 reflectionPlane;
 
     public FrameStat Stat { get; private set; } = new FrameStat();
+
+    public event Action<Texture2D> readTextureAction;
 
     // Cleanup all the objects we possibly have created
     void OnDisable()
@@ -95,8 +94,8 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             
 
             m_ReflectionTexture = new RenderTexture(currentCamera.pixelWidth, currentCamera.pixelHeight, 16, RenderTextureFormat.Default);
-            m_ReflectionTexture.useMipMap = m_ReflectionTexture.autoGenerateMips = true;
-            m_ReflectionTexture.autoGenerateMips = true; // no need for mips(unless wanting cheap roughness)
+            m_ReflectionTexture.useMipMap = m_ReflectionTexture.autoGenerateMips = false;
+            m_ReflectionTexture.autoGenerateMips = false; // no need for mips(unless wanting cheap roughness)
             m_ReflectionTexture.name = "_PlanarReflection" + GetInstanceID();
             m_ReflectionTexture.hideFlags = HideFlags.DontSave;
             m_ReflectionTexture.filterMode = FilterMode.Trilinear;
@@ -155,7 +154,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             m_ReadbackTexture.filterMode = FilterMode.Point;
             m_ReadbackTexture.wrapMode = TextureWrapMode.Clamp;
         }
-        m_ReadbackRequests.Enqueue(request);
+         m_ReadbackRequests.Enqueue(request);
     }
 
     private void UpdateRequest()
@@ -174,6 +173,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             {
                 // 更新数据并分发事件
                 m_ReadbackTexture.GetRawTextureData<Color32>().CopyFrom(req.GetData<Color32>());
+                m_ReadbackTexture.Apply();
                 complete = true;
 
              //   ReadbackStat.EndRequest(req, true);
@@ -187,11 +187,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 
         if (complete)
         {
-          /*  UpdateStat.EndFrame();
-
-            OnFeedbackReadComplete?.Invoke(m_ReadbackTexture);
-
-            UpdateDebugTexture();*/
+            readTextureAction?.Invoke(m_ReadbackTexture);
         }
     }
 
