@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.LWRP;
+using VirtualTexture;
 
 [ImageEffectAllowedInSceneView]
 public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
@@ -15,12 +16,12 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     public Material m_matCopyDepth = null;
     public Material m_matReflectionBlur = null;
     private Camera m_ReflectionCamera;
-    private int m_TextureSize = 256;
     private RenderTexture m_ReflectionTexture = null;
 
     private Vector4 reflectionPlane;
-    private int m_OldReflectionTextureSize;
-    
+
+    public FrameStat Stat { get; private set; } = new FrameStat();
+
     // Cleanup all the objects we possibly have created
     void OnDisable()
     {
@@ -72,6 +73,8 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         m_ReflectionCamera.worldToCameraMatrix = realCamera.worldToCameraMatrix ;
         m_ReflectionCamera.renderingPath = RenderingPath.Forward;
         m_ReflectionCamera.projectionMatrix = realCamera.projectionMatrix;
+        m_ReflectionCamera.clearFlags = CameraClearFlags.Color;
+        m_ReflectionCamera.backgroundColor = Color.white;
         m_ReflectionCamera.depthTextureMode = DepthTextureMode.Depth;
         m_ReflectionCamera.useOcclusionCulling = false;
 
@@ -79,31 +82,23 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     private void CreateTextureIfNone(Camera currentCamera)
     {
         LightweightRenderPipelineAsset lwAsset = (LightweightRenderPipelineAsset)GraphicsSettings.renderPipelineAsset;
-        var resMulti = lwAsset.renderScale;
-        m_TextureSize = (int)Mathf.Pow(2, Mathf.RoundToInt(Mathf.Log(currentCamera.pixelWidth * resMulti, 2)));
         //m_TextureSize.y = (int)Mathf.Pow(2, Mathf.RoundToInt(Mathf.Log(currentCamera.pixelHeight * resMulti, 2)));
 
         // Reflection render texture
         //if (Int2Compare(m_TextureSize, m_OldReflectionTextureSize) || !m_ReflectionTexture)
-        if (!m_ReflectionTexture || m_OldReflectionTextureSize != m_TextureSize)
+        if (!m_ReflectionTexture )
         {
             if (m_ReflectionTexture)
                 DestroyImmediate(m_ReflectionTexture);
+            
 
-            bool useHDR10 = Application.isMobilePlatform &&
-            SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGB2101010);
-            RenderTextureFormat hdrFormat = (useHDR10) ? RenderTextureFormat.ARGB2101010 : RenderTextureFormat.DefaultHDR;
-
-            m_ReflectionTexture = new RenderTexture(m_TextureSize, m_TextureSize, 16,
-                currentCamera.allowHDR ? hdrFormat : RenderTextureFormat.Default);
+            m_ReflectionTexture = new RenderTexture(currentCamera.pixelWidth, currentCamera.pixelHeight, 16, RenderTextureFormat.Default);
             m_ReflectionTexture.useMipMap = m_ReflectionTexture.autoGenerateMips = true;
             m_ReflectionTexture.autoGenerateMips = true; // no need for mips(unless wanting cheap roughness)
             m_ReflectionTexture.name = "_PlanarReflection" + GetInstanceID();
-            m_ReflectionTexture.isPowerOfTwo = true;
             m_ReflectionTexture.hideFlags = HideFlags.DontSave;
             m_ReflectionTexture.filterMode = FilterMode.Trilinear;
-
-            m_OldReflectionTextureSize = m_TextureSize;
+            
         }
         m_ReflectionTexture.DiscardContents();
 
@@ -137,8 +132,9 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         if (!enabled)
             return;
         UpdateReflectionCamera(camera);
+        Stat.BeginFrame();
         LightweightRenderPipeline.RenderSingleCamera(context, m_ReflectionCamera);
-
+        Stat.EndFrame();
        
     }
 
