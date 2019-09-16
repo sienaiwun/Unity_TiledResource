@@ -149,10 +149,11 @@ GameObject:
   - component: {fileID: 534669905}
   - component: {fileID: 534669904}
   - component: {fileID: 534669903}
-  - component: {fileID: 534669906}
   - component: {fileID: 534669908}
   - component: {fileID: 534669907}
   - component: {fileID: 534669909}
+  - component: {fileID: 534669906}
+  - component: {fileID: 534669910}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -232,11 +233,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e54139bcc7d23943869493ca38cfd04, type: 3}
+  m_Script: {fileID: 11500000, guid: e844231d931c59f49961e661f7f43dcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_TableSize: 64
+  MiplevelLimit: 11
+  m_LookupTexture: {fileID: 0}
 --- !u!114 &534669907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,9 +253,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c4f4f8b1d757f5449f2bbf3eca6feb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_matCopyDepth: {fileID: 0}
-  m_matReflectionBlur: {fileID: 0}
-  m_ReadbackTexture: {fileID: 779946248}
+  m_ReflectionTexture: {fileID: 0}
+  m_ReadbackTexture: {fileID: 932924184}
 --- !u!114 &534669908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,7 +316,20 @@ MonoBehaviour:
     m_RotationOrder: 4
   rotationLerpTime: 0.01
   invertY: 0
---- !u!28 &779946248
+--- !u!114 &534669910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9616c3907eba2344c8dc182597bce3b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_debugTexture: {fileID: 0}
+--- !u!28 &932924184
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -530,17 +546,22 @@ PrefabInstance:
     - target: {fileID: 9049934331998624383, guid: dc6c5d61507bf7348a5c23ea06bbae30,
         type: 3}
       propertyPath: m_FileRoot
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9049934331998624383, guid: dc6c5d61507bf7348a5c23ea06bbae30,
         type: 3}
       propertyPath: m_FilePathStrs.Array.data[0]
-      value: Slide_MIP{2}_Y{1}_X{0}.png
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 9049934331998624383, guid: dc6c5d61507bf7348a5c23ea06bbae30,
         type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9049934331998624383, guid: dc6c5d61507bf7348a5c23ea06bbae30,
+        type: 3}
+      propertyPath: m_ThreadLimit
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9049934331998624354, guid: dc6c5d61507bf7348a5c23ea06bbae30,
         type: 3}
