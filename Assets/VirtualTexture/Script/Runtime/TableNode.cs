@@ -47,6 +47,21 @@ public class TableNode
         return null;
     }
 
+    public TableNode GetExact(int x, int y, int mip)
+    {
+        if (!Contain(x, y))
+            return null;
+        if (MaxMipLevel == mip)
+            return this;
+        if(m_children!= null)
+        {
+            foreach (TableNode node in m_children)
+                if (node.GetExact(x, y, mip) != null)
+                    return node;
+        }
+        return null;
+    }
+
     public TableNode GetAvailable(int x, int y, int mip)
     {
         // 不需要mipmap 相等
