@@ -42,6 +42,17 @@ public class PageTable : MonoBehaviour
                            TableSize * m_tileTexture.TileSize, // virtualTexture's 1d dimension
                            MaxMipLevel,
                            0.0f));
+        Shader.SetGlobalTexture(
+                "_VTLookupTex",
+                m_LookupTexture);
+        Shader.SetGlobalVector(
+                "_VTPageParam",
+                new Vector4(
+                    TableSize,
+                    1.0f / TableSize,
+                    MaxMipLevel,
+                    0));
+
 
     }
 

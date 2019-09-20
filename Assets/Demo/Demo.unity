@@ -154,6 +154,7 @@ GameObject:
   - component: {fileID: 534669909}
   - component: {fileID: 534669906}
   - component: {fileID: 534669910}
+  - component: {fileID: 534669911}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -239,7 +240,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TableSize: 64
-  MiplevelLimit: 11
   m_LookupTexture: {fileID: 0}
 --- !u!114 &534669907
 MonoBehaviour:
@@ -329,6 +329,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_debugTexture: {fileID: 0}
+--- !u!114 &534669911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8889e0e16f3fb634d92ee723d5258600, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RegionSize: {x: 6, y: 6}
+  m_tiled_size: 128
+  m_padding_size: 4
+  tileTexture: {fileID: 0}
+  m_DrawTextureShader: {fileID: 4800000, guid: 368fef4ebf7073c4fa155393ff3896df, type: 3}
 --- !u!28 &932924184
 Texture2D:
   m_ObjectHideFlags: 0

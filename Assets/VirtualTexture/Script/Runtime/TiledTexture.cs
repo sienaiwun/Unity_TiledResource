@@ -32,6 +32,20 @@ public class TiledTexture : MonoBehaviour
         tileTexture = new RenderTexture(RegionSize.x * TileSizeWithPadding, RegionSize.y * TileSizeWithPadding, 0);
         tileTexture.useMipMap = false;
         tileTexture.wrapMode = TextureWrapMode.Clamp;
+        Shader.SetGlobalTexture(
+                    "_TiledTex",
+                    tileTexture);
+        // 设置Shader参数
+        // x: padding偏移量
+        // y: tile有效区域的尺寸
+        // zw: 1/区域尺寸
+        Shader.SetGlobalVector(
+            "_VTTileParam",
+            new Vector4(
+                (float)m_padding_size / TileSizeWithPadding,
+                (float)TileSize / TileSizeWithPadding,
+                1.0f / RegionSize.x,
+                1.0f / RegionSize.y));
         m_DrawTextureMateral = new Material(m_DrawTextureShader);
     }
 
@@ -60,7 +74,6 @@ public class TiledTexture : MonoBehaviour
         bool textureIsLoaded = pools.SetActive(PosToId(tileIndex));
         if (!textureIsLoaded)
             return;
-
         RectInt renderPos = new RectInt(tileIndex.x * TileSizeWithPadding, tileIndex.y * TileSizeWithPadding, TileSizeWithPadding, TileSizeWithPadding);
         DrawTexture(newLoadTexture, renderPos);
     }

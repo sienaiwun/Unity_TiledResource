@@ -29,10 +29,7 @@ float4 _VTTileParam;
 
 sampler2D _VTLookupTex;
 
-sampler2D _VTTiledTex0;
-sampler2D _VTTiledTex1;
-sampler2D _VTTiledTex2;
-sampler2D _VTTiledTex3;
+sampler2D _TiledTex;
 
 VTV2f VTVert(VTAppdata v)
 {
@@ -60,30 +57,5 @@ float2 VTTransferUV(float2 uv)
                     1.0f / RegionSize.y));*/
 }
 
-
-fixed4 VTTex2D0(float2 uv)
-{
-	return tex2D(_VTTiledTex0, uv);
-}
-
-fixed4 VTTex2D1(float2 uv)
-{
-	return tex2D(_VTTiledTex1, uv);
-}
-
-fixed4 VTTex2D2(float2 uv)
-{
-	return tex2D(_VTTiledTex2, uv);
-}
-
-fixed4 VTTex2D3(float2 uv)
-{
-	return tex2D(_VTTiledTex3, uv);
-}
-
-fixed4 VTTex2D(float2 uv)
-{
-	return VTTex2D0(uv);
-}
 
 #endif
