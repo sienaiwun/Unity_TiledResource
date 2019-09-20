@@ -40,7 +40,7 @@ public class PageTable : MonoBehaviour
                "_VTFeedbackParam",
                new Vector4(TableSize,
                            TableSize * m_tileTexture.TileSize, // virtualTexture's 1d dimension
-                           TableSize,
+                           MaxMipLevel,
                            0.0f));
 
     }
@@ -91,9 +91,11 @@ public class PageTable : MonoBehaviour
     {
         int pagex = pixel.r;
         int pagey = pixel.g;
-        int mip = pixel.b; 
-        if (mip > m_RootPageNode.MaxMipLevel) // clear color
-                return null;
+       
+        int mip = pixel.b;
+        if (mip == 255)
+            return null;
+        mip = Mathf.Min(mip, m_RootPageNode.MaxMipLevel); // clear color
         TableNode node = m_RootPageNode.GetAvailable(pagex, pagey, mip);
         if (node == null)
         {

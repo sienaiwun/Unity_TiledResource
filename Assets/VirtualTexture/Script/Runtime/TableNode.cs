@@ -56,8 +56,11 @@ public class TableNode
         if(m_children!= null)
         {
             foreach (TableNode node in m_children)
-                if (node.GetExact(x, y, mip) != null)
-                    return node;
+            {
+                TableNode child = node.GetExact(x, y, mip);
+                if (child != null)
+                    return child;
+            }
         }
         return null;
     }
@@ -70,8 +73,11 @@ public class TableNode
         if(mip< MaxMipLevel&& m_children!= null)
         {
             foreach (TableNode node in m_children)
-                if (node.GetAvailable(x, y, mip) != null)
-                    return node;
+            {
+                TableNode child = node.GetAvailable(x, y, mip);
+                if (child != null)
+                    return child;
+            }
         }
         return (Payload.IsReady() ? this : null);
     }

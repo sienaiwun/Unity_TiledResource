@@ -5,7 +5,11 @@ using UnityEngine;
 public class PagePayload 
 {
     public bool is_invalid = true;
-    public Vector2Int tileIndex;
+    private Vector2Int m_tile_index;
+    public Vector2Int tileIndex { get { return m_tile_index; }
+        set {
+            m_tile_index = value; is_invalid = false;
+        } }
 
     public int activeFrame;
 
