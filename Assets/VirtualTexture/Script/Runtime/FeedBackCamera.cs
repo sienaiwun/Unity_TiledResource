@@ -73,11 +73,12 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         }
     }
 
-    private void Start()
+    private void InitMaterial()
     {
         if (m_Scale != ScaleFactor.One)
         {
-            m_DownScaleMaterial = new Material(m_DownScaleShader);
+            if(m_DownScaleMaterial == null)
+                m_DownScaleMaterial = new Material(m_DownScaleShader);
 
             switch (m_Scale)
             {
@@ -189,6 +190,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 
         if (!enabled)
             return;
+        InitMaterial();
         UpdateReflectionCamera(camera);
         Stat.BeginFrame();
         LightweightRenderPipeline.RenderSingleCamera(context, m_CamputureCamera);
