@@ -5,6 +5,35 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.LWRP;
 using VirtualTexture;
 
+public enum ScaleFactor
+{
+    One,
+
+    Half,
+
+    Quarter,
+
+    Eighth,
+
+}
+
+public static class ScaleModeExtensions
+{
+    public static float ToFloat(this ScaleFactor mode)
+    {
+        switch (mode)
+        {
+            case ScaleFactor.Eighth:
+                return 0.125f;
+            case ScaleFactor.Quarter:
+                return 0.25f;
+            case ScaleFactor.Half:
+                return 0.5f;
+        }
+        return 1;
+    }
+}
+
 [ImageEffectAllowedInSceneView]
 public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 {
@@ -13,8 +42,9 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     const string k_Reflection_process = "Reflection Blur PostProcess";
     const string k_glossy_enable = "_GLOSSY_REFLECTION";
     
-    private Camera m_ReflectionCamera;
-    public RenderTexture m_ReflectionTexture = null;
+    private Camera m_CamputureCamera;
+    public RenderTexture m_CamptureTexture = null;
+    public RenderTexture m_DownSampleTexture = null;
     public Texture2D m_ReadbackTexture;
 
     private Vector4 reflectionPlane;
@@ -23,17 +53,44 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 
     public event Action<Texture2D> readTextureAction;
 
+    [SerializeField]
+    private ScaleFactor m_Scale = default;
+    private Material m_DownScaleMaterial;
+    private int m_DownScaleMaterialPass;
+    [SerializeField]
+    private Shader m_DownScaleShader = default;
     // Cleanup all the objects we possibly have created
     void OnDisable()
     {
-        if (m_ReflectionCamera)
+        if (m_CamputureCamera)
         {
-            m_ReflectionCamera.targetTexture = null;
-            DestroyImmediate(m_ReflectionCamera.gameObject);
+            m_CamputureCamera.targetTexture = null;
+            DestroyImmediate(m_CamputureCamera.gameObject);
         }
-        if (m_ReflectionTexture)
+        if (m_CamptureTexture)
         {
-            DestroyImmediate(m_ReflectionTexture);
+            DestroyImmediate(m_CamptureTexture);
+        }
+    }
+
+    private void Start()
+    {
+        if (m_Scale != ScaleFactor.One)
+        {
+            m_DownScaleMaterial = new Material(m_DownScaleShader);
+
+            switch (m_Scale)
+            {
+                case ScaleFactor.Half:
+                    m_DownScaleMaterialPass = 0;
+                    break;
+                case ScaleFactor.Quarter:
+                    m_DownScaleMaterialPass = 1;
+                    break;
+                case ScaleFactor.Eighth:
+                    m_DownScaleMaterialPass = 2;
+                    break;
+            }
         }
     }
 
@@ -61,23 +118,23 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     private void UpdateReflectionCamera(Camera realCamera)
     {
         CreateTextureIfNone(realCamera);
-        if (m_ReflectionCamera == null)
-            m_ReflectionCamera = CreateMirrorObjects(realCamera);
-        UpdateCamera(realCamera, m_ReflectionCamera);
+        if (m_CamputureCamera == null)
+            m_CamputureCamera = CreateMirrorObjects(realCamera);
+        UpdateCamera(realCamera, m_CamputureCamera);
 
      
       
 
-        m_ReflectionCamera.transform.forward = realCamera.transform.forward;
-        m_ReflectionCamera.transform.rotation = realCamera.transform.rotation;
-        m_ReflectionCamera.transform.position = realCamera.transform.position;
-        m_ReflectionCamera.worldToCameraMatrix = realCamera.worldToCameraMatrix ;
-        m_ReflectionCamera.renderingPath = RenderingPath.Forward;
-        m_ReflectionCamera.projectionMatrix = realCamera.projectionMatrix;
-        m_ReflectionCamera.clearFlags = CameraClearFlags.Color;
-        m_ReflectionCamera.backgroundColor = Color.white;
-        m_ReflectionCamera.depthTextureMode = DepthTextureMode.Depth;
-        m_ReflectionCamera.useOcclusionCulling = false;
+        m_CamputureCamera.transform.forward = realCamera.transform.forward;
+        m_CamputureCamera.transform.rotation = realCamera.transform.rotation;
+        m_CamputureCamera.transform.position = realCamera.transform.position;
+        m_CamputureCamera.worldToCameraMatrix = realCamera.worldToCameraMatrix ;
+        m_CamputureCamera.renderingPath = RenderingPath.Forward;
+        m_CamputureCamera.projectionMatrix = realCamera.projectionMatrix;
+        m_CamputureCamera.clearFlags = CameraClearFlags.Color;
+        m_CamputureCamera.backgroundColor = Color.white;
+        m_CamputureCamera.depthTextureMode = DepthTextureMode.Depth;
+        m_CamputureCamera.useOcclusionCulling = false;
 
     }
     private void CreateTextureIfNone(Camera currentCamera)
@@ -87,21 +144,21 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
 
         // Reflection render texture
         //if (Int2Compare(m_TextureSize, m_OldReflectionTextureSize) || !m_ReflectionTexture)
-        if (!m_ReflectionTexture )
+        if (!m_CamptureTexture )
         {
-            if (m_ReflectionTexture)
-                DestroyImmediate(m_ReflectionTexture);
+            if (m_CamptureTexture)
+                DestroyImmediate(m_CamptureTexture);
             
 
-            m_ReflectionTexture = new RenderTexture(currentCamera.pixelWidth, currentCamera.pixelHeight, 16, RenderTextureFormat.Default);
-            m_ReflectionTexture.useMipMap = m_ReflectionTexture.autoGenerateMips = false;
-            m_ReflectionTexture.autoGenerateMips = false; // no need for mips(unless wanting cheap roughness)
-            m_ReflectionTexture.name = "_PlanarReflection" + GetInstanceID();
-            m_ReflectionTexture.hideFlags = HideFlags.DontSave;
-            m_ReflectionTexture.filterMode = FilterMode.Trilinear;
+            m_CamptureTexture = new RenderTexture(currentCamera.pixelWidth, currentCamera.pixelHeight, 16, RenderTextureFormat.Default);
+            m_CamptureTexture.useMipMap = m_CamptureTexture.autoGenerateMips = false;
+            m_CamptureTexture.autoGenerateMips = false; // no need for mips(unless wanting cheap roughness)
+            m_CamptureTexture.name = "_PlanarReflection" + GetInstanceID();
+            m_CamptureTexture.hideFlags = HideFlags.DontSave;
+            m_CamptureTexture.filterMode = FilterMode.Trilinear;
             
         }
-        m_ReflectionTexture.DiscardContents();
+        m_CamptureTexture.DiscardContents();
 
     }
 
@@ -112,7 +169,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
                 typeof(Camera), typeof(Skybox));
         var reflectionCamera = go.GetComponent<Camera>();
         reflectionCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
-        reflectionCamera.targetTexture = m_ReflectionTexture;
+        reflectionCamera.targetTexture = m_CamptureTexture;
         reflectionCamera.allowMSAA = true;
         reflectionCamera.depth = -10;
         reflectionCamera.enabled = false;
@@ -134,7 +191,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             return;
         UpdateReflectionCamera(camera);
         Stat.BeginFrame();
-        LightweightRenderPipeline.RenderSingleCamera(context, m_ReflectionCamera);
+        LightweightRenderPipeline.RenderSingleCamera(context, m_CamputureCamera);
         Stat.EndFrame();
 
         NewRequest();
@@ -145,16 +202,38 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     {
         if (m_ReadbackRequests.Count > 8)
             return;
-        var request = AsyncGPUReadback.Request(m_ReflectionTexture);
-        int width = m_ReflectionTexture.width;
-        int height = m_ReflectionTexture.height;
+        int width = (int)(m_CamptureTexture.width *m_Scale.ToFloat());
+        int height = (int)(m_CamptureTexture.height * m_Scale.ToFloat());
+        if (m_Scale != ScaleFactor.One)
+        {
+            if (m_DownSampleTexture == null || m_DownSampleTexture.width != width || m_DownSampleTexture.height != height)
+            {
+                m_DownSampleTexture = new RenderTexture(width, height, 0);
+            }
+            m_DownSampleTexture.DiscardContents();
+            Graphics.Blit(m_CamptureTexture, m_DownSampleTexture, m_DownScaleMaterial, m_DownScaleMaterialPass);
+        }
         if (m_ReadbackTexture == null || m_ReadbackTexture.width != width || m_ReadbackTexture.height != height)
         {
             m_ReadbackTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             m_ReadbackTexture.filterMode = FilterMode.Point;
             m_ReadbackTexture.wrapMode = TextureWrapMode.Clamp;
+
         }
-         m_ReadbackRequests.Enqueue(request);
+        AsyncGPUReadbackRequest request;
+        if (m_Scale != ScaleFactor.One)
+        {
+
+             request = AsyncGPUReadback.Request(m_DownSampleTexture);
+        }
+        else
+        {
+
+             request = AsyncGPUReadback.Request(m_CamptureTexture);
+        }
+
+
+        m_ReadbackRequests.Enqueue(request);
     }
 
     private void UpdateRequest()
