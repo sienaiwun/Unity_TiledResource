@@ -32,10 +32,12 @@ public class TableNode
             int halfheight = Rect.height / 2;
             int midx = Rect.x + halfwidth;
             int midy = Rect.y + halfheight;
+            int minx = Rect.x;
+            int miny = Rect.y;
 
-            m_children[0] = new TableNode(MaxMipLevel - 1, x, y, halfwidth, halfheight);
-            m_children[1] = new TableNode(MaxMipLevel - 1, midx, y, halfwidth, halfheight);
-            m_children[2] = new TableNode(MaxMipLevel - 1, x, midy, halfwidth, halfheight);
+            m_children[0] = new TableNode(MaxMipLevel - 1, minx, miny, halfwidth, halfheight);
+            m_children[1] = new TableNode(MaxMipLevel - 1, midx, miny, halfwidth, halfheight);
+            m_children[2] = new TableNode(MaxMipLevel - 1, minx, midy, halfwidth, halfheight);
             m_children[3] = new TableNode(MaxMipLevel - 1, midx, midy, halfwidth, halfheight);
         }
         foreach (TableNode child in m_children)

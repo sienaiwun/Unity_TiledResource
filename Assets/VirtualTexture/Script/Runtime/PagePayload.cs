@@ -24,6 +24,4 @@ public class PagePayload
     {
         is_invalid = true;
     }
-
-
 }

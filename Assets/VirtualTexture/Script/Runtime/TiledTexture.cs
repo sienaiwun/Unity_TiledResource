@@ -1,9 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
+using System;
 using UnityEngine;
 
 public class TiledTexture : MonoBehaviour
 {
+    public bool saveToFile = false;
     // 二维 虚拟内存
     public Vector2Int RegionSize = new Vector2Int(6,6);
 
@@ -24,6 +25,11 @@ public class TiledTexture : MonoBehaviour
     [SerializeField]
     private Shader m_DrawTextureShader = default;
     private Material m_DrawTextureMateral;
+
+    public Texture m_DrawTexture;
+
+    public event Action<Vector2Int> OnTileUpdateComplete;
+
 
     private void Start()
     {
@@ -76,6 +82,7 @@ public class TiledTexture : MonoBehaviour
             return;
         RectInt renderPos = new RectInt(tileIndex.x * TileSizeWithPadding, tileIndex.y * TileSizeWithPadding, TileSizeWithPadding, TileSizeWithPadding);
         DrawTexture(newLoadTexture, renderPos);
+        OnTileUpdateComplete.Invoke(tileIndex);
     }
 
     private void DrawTexture(Texture input, RectInt position)
@@ -99,5 +106,6 @@ public class TiledTexture : MonoBehaviour
         m_DrawTextureMateral.SetMatrix(Shader.PropertyToID("_ImageMVP"), GL.GetGPUProjectionMatrix(mat, true));
         
         Graphics.Blit(input, tileTexture, m_DrawTextureMateral);
+        m_DrawTexture = input;
     }
 }

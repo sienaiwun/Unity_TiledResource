@@ -45,6 +45,8 @@ namespace VirtualTexture
         /// </summary>
         private Material m_DrawTextureMateral;
 
+        public Texture m_DrawTexture;
+
         /// <summary>
         /// Tile缓存池.
         /// </summary>
@@ -175,7 +177,7 @@ namespace VirtualTexture
             // 初始化绘制材质
             if (m_DrawTextureMateral == null)
                 m_DrawTextureMateral = new Material(m_DrawTextureShader);
-
+            m_DrawTexture = source;
             // 构建变换矩阵
             float l = position.x * 2.0f / target.width - 1;
             float r = (position.x + position.width) * 2.0f / target.width - 1;

@@ -6,7 +6,7 @@
 fixed4 VTFragUnlit(VTV2f i) : SV_Target
 {
 	float2 uv = VTTransferUV(i.uv);
-	fixed4 col = tex2D(_TiledTex, uv);;
+	fixed4 col = tex2D(_TiledTex, uv);
 	return col;
 }
 

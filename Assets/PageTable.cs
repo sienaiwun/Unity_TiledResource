@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class PageTable : MonoBehaviour
 {
@@ -34,6 +35,7 @@ public class PageTable : MonoBehaviour
         m_Loader = (FileLoader)GetComponent(typeof(FileLoader));
         m_tileTexture = (TiledTexture)GetComponent(typeof(TiledTexture));
 
+        m_tileTexture.OnTileUpdateComplete += InvalidatePage;
         m_Loader.OnLoadCompleteEvent += OnLoadTextureFinished;
         ((FeedBackCamera)GetComponent(typeof(FeedBackCamera))).readTextureAction += ProcessFeedback;
         Shader.SetGlobalVector(
@@ -123,16 +125,29 @@ public class PageTable : MonoBehaviour
         return node;
 
     }
-
     private void OnLoadTextureFinished(LoadRequest request, Texture2D texture)
     {
+        var file = string.Format("file:///" + Path.Combine(Application.streamingAssetsPath, "Slide_MIP{2}_Y{1}_X{0}.png"), request.PageX >> request.MipLevel, request.PageY >> request.MipLevel, request.MipLevel);
         TableNode node = m_RootPageNode.GetExact(request.PageX, request.PageY, request.MipLevel);
         if (node == null || node.Payload.loadRequest != request) // loading is completed
+        {
+            Debug.Log("node is null" + node + "node.Payload.loadRequest :" + node.Payload.loadRequest);
             return;
+        }
         node.Payload.loadRequest = null;
         Vector2Int id = m_tileTexture.UpdatePos();
         m_tileTexture.UpdateTile(id, texture);
         node.Payload.tileIndex = id;
         m_ActivePages[id] = node;
+    }
+
+    private void InvalidatePage(Vector2Int id)
+    {
+        TableNode node = null;
+        if (!m_ActivePages.TryGetValue(id, out node))
+            return;
+
+        node.Payload.Reset();
+        m_ActivePages.Remove(id);
     }
 }
