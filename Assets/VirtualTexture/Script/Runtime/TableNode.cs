@@ -85,9 +85,9 @@ public class TableNode
 
     public bool Contain(int x, int y)
     {
-        if (x < Rect.xMin || x > Rect.xMax)
+        if (x < Rect.xMin || x >= Rect.xMax)
             return false;
-        if (y < Rect.yMin || y > Rect.yMax)
+        if (y < Rect.yMin || y >= Rect.yMax)
             return false;
         return true;
     }

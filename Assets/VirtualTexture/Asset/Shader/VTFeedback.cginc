@@ -22,15 +22,21 @@ fixed4 VTFragFeedback(VTV2f i) : SV_Target
 
 fixed4 GetMaxFeedback(float2 uv, int count)
 {
-	fixed4 col = fixed4(1, 1, 1, 1);
+	fixed4 col = fixed4(0, 0, 0, 1);
 	for (int y = 0; y < count; y++)
 	{
 		for (int x = 0; x < count; x++)
 		{
 			fixed4 col1 = tex2D(_MainTex, uv + float2(_MainTex_TexelSize.x * x, _MainTex_TexelSize.y * y));
-			col = lerp(col, col1, step(col1.b, col.b));
+			if (col1.x > 0.98 &&  col1.y> 0.98 &&  col1.z > 0.98)
+				continue;
+			if (col1.z >= col.z)
+			{
+				col = col1;
+			}
 		}
 	}
+	//col.x = 0.0;
 	return col;
 }
 

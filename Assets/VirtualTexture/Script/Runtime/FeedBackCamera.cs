@@ -47,8 +47,6 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     public RenderTexture m_DownSampleTexture = null;
     public Texture2D m_ReadbackTexture;
 
-    private Vector4 reflectionPlane;
-
     public FrameStat Stat { get; private set; } = new FrameStat();
 
     public event Action<Texture2D> readTextureAction;
@@ -156,7 +154,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             m_CamptureTexture.autoGenerateMips = false; // no need for mips(unless wanting cheap roughness)
             m_CamptureTexture.name = "_PlanarReflection" + GetInstanceID();
             m_CamptureTexture.hideFlags = HideFlags.DontSave;
-            m_CamptureTexture.filterMode = FilterMode.Trilinear;
+            m_CamptureTexture.filterMode = FilterMode.Point;
             
         }
         m_CamptureTexture.DiscardContents();
@@ -166,12 +164,12 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     private Camera CreateMirrorObjects(Camera currentCamera)
     {
         GameObject go =
-            new GameObject("Planar Refl Camera id" + GetInstanceID() + " for " + currentCamera.GetInstanceID(),
-                typeof(Camera), typeof(Skybox));
+            new GameObject("Feedback Camera" + GetInstanceID() + " for " + currentCamera.GetInstanceID(),
+                typeof(Camera));
         var reflectionCamera = go.GetComponent<Camera>();
         reflectionCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
         reflectionCamera.targetTexture = m_CamptureTexture;
-        reflectionCamera.allowMSAA = true;
+        reflectionCamera.allowMSAA = false;
         reflectionCamera.depth = -10;
         reflectionCamera.enabled = false;
         reflectionCamera.name = FeedbackGlobals.FeedbackCamName;
