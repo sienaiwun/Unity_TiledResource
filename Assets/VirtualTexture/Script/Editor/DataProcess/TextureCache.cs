@@ -2,7 +2,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace VirtualTexture
+namespace Demo
 {
     public class TextureCache
     {

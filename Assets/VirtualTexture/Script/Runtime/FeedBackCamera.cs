@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.LWRP;
-using VirtualTexture;
 
 public enum ScaleFactor
 {
@@ -46,9 +45,6 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
     public RenderTexture m_CamptureTexture = null;
     public RenderTexture m_DownSampleTexture = null;
     public Texture2D m_ReadbackTexture;
-
-    public FrameStat Stat { get; private set; } = new FrameStat();
-
     public event Action<Texture2D> readTextureAction;
 
     [SerializeField]
@@ -190,9 +186,7 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
             return;
         InitMaterial();
         UpdateReflectionCamera(camera);
-        Stat.BeginFrame();
         LightweightRenderPipeline.RenderSingleCamera(context, m_CamputureCamera);
-        Stat.EndFrame();
 
         NewRequest();
        

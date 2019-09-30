@@ -327,7 +327,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveToFile: 0
-  RegionSize: {x: 6, y: 6}
+  RegionSize: {x: 8, y: 8}
   m_tiled_size: 128
   m_padding_size: 4
   tileTexture: {fileID: 0}
