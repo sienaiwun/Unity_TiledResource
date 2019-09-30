@@ -162,17 +162,17 @@ public class FeedBackCamera : MonoBehaviour, IBeforeCameraRender
         GameObject go =
             new GameObject("Feedback Camera" + GetInstanceID() + " for " + currentCamera.GetInstanceID(),
                 typeof(Camera));
-        var reflectionCamera = go.GetComponent<Camera>();
-        reflectionCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
-        reflectionCamera.targetTexture = m_CamptureTexture;
-        reflectionCamera.allowMSAA = false;
-        reflectionCamera.depth = -10;
-        reflectionCamera.enabled = false;
-        reflectionCamera.name = FeedbackGlobals.FeedbackCamName;
-        reflectionCamera.allowHDR = false;
+        var feedBackCamera = go.GetComponent<Camera>();
+        feedBackCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
+        feedBackCamera.targetTexture = m_CamptureTexture;
+        feedBackCamera.allowMSAA = false;
+        feedBackCamera.depth = -10;
+        feedBackCamera.enabled = false;
+        feedBackCamera.name = FeedbackGlobals.FeedbackCamName;
+        feedBackCamera.allowHDR = false;
 
-        go.hideFlags = HideFlags.DontSave;
-        return reflectionCamera;
+        go.hideFlags = HideFlags.HideAndDontSave;
+        return feedBackCamera;
     }
 
 
