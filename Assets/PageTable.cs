@@ -127,7 +127,7 @@ public class PageTable : MonoBehaviour
     }
     private void OnLoadTextureFinished(LoadRequest request, Texture2D texture)
     {
-        var file = string.Format("file:///" + Path.Combine(Application.streamingAssetsPath, "Slide_MIP{2}_Y{1}_X{0}.png"), request.PageX >> request.MipLevel, request.PageY >> request.MipLevel, request.MipLevel);
+        var file = string.Format("file:///" + Path.Combine(Application.streamingAssetsPath, "Tiles_MIP{2}_Y{1}_X{0}.png"), request.PageX >> request.MipLevel, request.PageY >> request.MipLevel, request.MipLevel);
         TableNode node = m_RootPageNode.GetExact(request.PageX, request.PageY, request.MipLevel);
         if (node == null || node.Payload.loadRequest != request) // loading is completed
         {

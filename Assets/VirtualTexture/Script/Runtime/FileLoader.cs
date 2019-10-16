@@ -38,7 +38,7 @@ public class FileLoader : MonoBehaviour
     {
         Texture2D texture = null ;
         
-        var file = string.Format("file:///" + Path.Combine(Application.streamingAssetsPath, "Slide_MIP{2}_Y{1}_X{0}.png"), request.PageX >> request.MipLevel, request.PageY >> request.MipLevel, request.MipLevel);
+        var file = string.Format("file:///" + Path.Combine(Application.streamingAssetsPath, "Tiles_MIP{2}_Y{1}_X{0}.png"), request.PageX >> request.MipLevel, request.PageY >> request.MipLevel, request.MipLevel);
         Debug.Log("load texture:"+ file);
         var www = UnityWebRequestTexture.GetTexture(file);
         yield return www.SendWebRequest();
