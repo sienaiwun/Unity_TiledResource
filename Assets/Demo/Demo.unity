@@ -328,7 +328,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   saveToFile: 0
   RegionSize: {x: 8, y: 8}
-  m_tiled_size: 128
+  m_tiled_size: 512
   m_padding_size: 4
   tileTexture: {fileID: 0}
   m_DrawTextureShader: {fileID: 4800000, guid: 368fef4ebf7073c4fa155393ff3896df, type: 3}
