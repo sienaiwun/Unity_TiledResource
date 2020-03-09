@@ -55,3 +55,12 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 Assets/StreamingAssets/
+Assets/tiles_generator.py.meta
+Assets/Demo/Images.meta
+Assets/image_generator.py.meta
+Assets/VirtualTexture/Asset/Cache~/
+Assets/VirtualTexture/Asset/Images/
+Assets/VirtualTexture/Asset/Images.meta
+Assets/images/
+Assets/cache/
+*.pyc
