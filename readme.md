@@ -27,7 +27,7 @@
 2. Run [tile_generator.py](https://github.com/sienaiwun/Unity_TilesResource/blob/master/Assets/tiles_generator.py)
 3. Unity Run Asset/VirtualTexture/Asset Demo.unity
 #### DirectX中的硬件加速
-在对虚拟贴图用硬件支持的API中，虚拟贴图的使用是透明的，不需要去显示构建indirect texture,而纹理采样也不需要进行地质转换，和普通贴图的使用是一样的。另外高级的shader api使得更多的操作能集成在显卡运算中。
+在对虚拟贴图用硬件支持的API中，虚拟贴图的使用是透明的，不需要去显示构建indirect texture,而纹理采样也不需要进行地质转换，和普通贴图的使用是一样的。而且由于硬件的支持，在物理显存的排列组织上，不必添加padding的pixel，也能支持更高级带mipmapleivel的比如说各向异性的采样方式（前提是需要的层级已经加载好）。另外高级的shader api使得更多的操作能集成在显卡运算中。
 DirectX 在dx11.2中集成了tiled Resource 使用它可以硬件层面上提升virtual texture的效率。
 在高级API中对上诉流程进行效率优化的地方有：
 * Feedback Pass可以直接集成在贴图绘制中，通过写入structure buffer来统计出需要的纹理id.
