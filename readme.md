@@ -22,7 +22,6 @@
 * Indirect Texture:Indirect Texuture 和块的尺寸相符，在本示例中为$32 \times 32$，每个纹素记录了所在纹素对应的缩放和偏移。虚拟贴图的纹理采样首先找到在IndirectTexture的对应纹素，该纹素记录了在实际物理内存的偏移和缩放，通过计算找到物理内存地址，进行采样。
 
 ###### Usage
-[代码下载](https://github.com/sienaiwun/Unity_TilesResource)
 1. Run [image_generator.py](https://github.com/sienaiwun/Unity_TilesResource/blob/master/Assets/image_generator.py)
 2. Run [tile_generator.py](https://github.com/sienaiwun/Unity_TilesResource/blob/master/Assets/tiles_generator.py)
 3. Unity Run Asset/VirtualTexture/Asset Demo.unity
