@@ -19,11 +19,9 @@
 * Asset Pipeline:代码库下的脚本[tile_generator.py](https://github.com/sienaiwun/Unity_TilesResource/blob/master/Assets/tiles_generator.py)将对应的虚拟贴图图片资源划分到块中，同时生成虚拟贴图的各个mipmap链中的块。
 经过处理后将贴图资源颗粒化划分为众多小块:
 ![Tiles_MIP0_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP0_Y0_X0.png?raw=true)
-mip0的第一个小块
 ![Tiles_MIP1_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP1_Y0_X0.png?raw=true)
-mip1的第一个小块
 ![Tiles_MIP5_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP5_Y0_X0.png?raw=true)
-mip5的第一个小块
+分别为mip0,mip1,和mip5的第一个小块
 * Feedback Pass:回读当前场景中所需要的虚拟贴图块，在实现中选用一个低分辨率的framebuffer。该framebuffer记录了需要加载的贴图id. 贴图id由xy块索引值和mipmap层级构成。 在GPU绘制后通过CPU回读进行处理
 * Page Manager:Page Manager处理回读的贴图id信息，把已经读取好的块上传到GPU的物理位置中，然后更新Indirect Texture。Page Manager维护了一个虚拟贴图的四叉树，该四叉树记录了page的优先级，同时也维护这GPU物理缓存的更新。通过当前四叉树和page ids确定加载pages队列，进行异步读取。对已经读取的page提交到GPU的物理缓存上，并更新Indirect Texture对应区块的偏移和缩放。
 * Indirect Texture:Indirect Texuture 和块的尺寸相符，在本示例中为$32 \times 32$，每个纹素记录了所在纹素对应的缩放和偏移。虚拟贴图的纹理采样首先找到在IndirectTexture的对应纹素，该纹素记录了在实际物理内存的偏移和缩放，通过计算找到物理内存地址，进行采样。
@@ -62,4 +60,5 @@ uint pageCount = Size / pageSize;
 
 #### 参考资料
 [Software Virtual Texture](http://www.mrelusive.com/publications/papers/Software-Virtual-Textures.pdf)
+
 [Real Virtual Texturing](https://developer.nvidia.com/sites/default/files/akamai/gameworks/events/gdc14/GDC_14_Real%20Virtual%20Texturing%20-%20Taking%20Advantage%20of%20DirectX%2011.2%20Tiled%20Resources.pdf)
