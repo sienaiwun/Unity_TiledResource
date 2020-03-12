@@ -19,8 +19,8 @@
 * Asset Pipeline:代码库下的脚本[tile_generator.py](https://github.com/sienaiwun/Unity_TilesResource/blob/master/Assets/tiles_generator.py)将对应的虚拟贴图图片资源划分到块中，同时生成虚拟贴图的各个mipmap链中的块。
 经过处理后将贴图资源颗粒化划分为众多小块,下图分别展示mip0,mip1,和mip5的第一个小块:
 
-![Tiles_MIP0_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP0_Y0_X0.png?raw=true)
-![Tiles_MIP1_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP1_Y0_X0.png?raw=true)
+![Tiles_MIP0_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP0_Y0_X0.png?raw=true),
+![Tiles_MIP1_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP1_Y0_X0.png?raw=true),
 ![Tiles_MIP5_Y0_X0.png](https://github.com/sienaiwun/publicImgs/blob/master/imgs/VirtualTexture/Tiles_MIP5_Y0_X0.png?raw=true)
 
 
